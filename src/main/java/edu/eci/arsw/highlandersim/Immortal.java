@@ -2,6 +2,8 @@ package edu.eci.arsw.highlandersim;
 
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Immortal extends Thread {
 
@@ -16,20 +18,38 @@ public class Immortal extends Thread {
     private final String name;
 
     private final Random r = new Random(System.currentTimeMillis());
+    private AtomicBoolean lockJefe;
+    public static AtomicInteger lockHillos = new AtomicInteger(0);
 
 
-    public Immortal(String name, List<Immortal> immortalsPopulation, int health, int defaultDamageValue, ImmortalUpdateReportCallback ucb) {
+    public Immortal(String name, List<Immortal> immortalsPopulation, int health, int defaultDamageValue, ImmortalUpdateReportCallback ucb, AtomicBoolean lockJefe) {
         super(name);
         this.updateCallback=ucb;
         this.name = name;
         this.immortalsPopulation = immortalsPopulation;
         this.health = health;
         this.defaultDamageValue=defaultDamageValue;
+        this.lockJefe = lockJefe;
     }
 
     public void run() {
-
         while (true) {
+            if(lockJefe.get()){
+                if(lockHillos.get() == immortalsPopulation.size() - 1) {
+                    synchronized (lockJefe){
+                        lockJefe.notifyAll();
+                    }
+                    lockHillos.set(0);
+                }
+                try {
+                    lockHillos.addAndGet(1);
+                    synchronized (lockHillos){
+                        lockHillos.wait();
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             Immortal im;
 
             int myIndex = immortalsPopulation.indexOf(this);

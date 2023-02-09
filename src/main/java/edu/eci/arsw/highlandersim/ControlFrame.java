@@ -20,6 +20,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import java.awt.Color;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JScrollBar;
 
 public class ControlFrame extends JFrame {
@@ -35,6 +36,7 @@ public class ControlFrame extends JFrame {
     private JLabel statisticsLabel;
     private JScrollPane scrollPane;
     private JTextField numOfImmortals;
+    private AtomicBoolean lockJefe = new AtomicBoolean(false);
 
     /**
      * Launch the application.
@@ -85,21 +87,23 @@ public class ControlFrame extends JFrame {
         toolBar.add(btnStart);
 
         JButton btnPauseAndCheck = new JButton("Pause and check");
-        btnPauseAndCheck.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-
-                /*
-				 * COMPLETAR
-                 */
-                int sum = 0;
-                for (Immortal im : immortals) {
-                    sum += im.getHealth();
+        btnPauseAndCheck.addActionListener(e -> {
+            try {
+                lockJefe.set(true);
+                synchronized (lockJefe){
+                    lockJefe.wait();
                 }
-
-                statisticsLabel.setText("<html>"+immortals.toString()+"<br>Health sum:"+ sum);
-                
-                
-
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+            int sum = 0;
+            for (Immortal im : immortals) {
+                sum += im.getHealth();
+            }
+            statisticsLabel.setText("<html>"+immortals.toString()+"<br>Health sum:"+ sum);
+            lockJefe.set(false);
+            synchronized (Immortal.lockHillos){
+                Immortal.lockHillos.notifyAll();
             }
         });
         toolBar.add(btnPauseAndCheck);
@@ -152,7 +156,7 @@ public class ControlFrame extends JFrame {
             List<Immortal> il = new LinkedList<Immortal>();
 
             for (int i = 0; i < ni; i++) {
-                Immortal i1 = new Immortal("im" + i, il, DEFAULT_IMMORTAL_HEALTH, DEFAULT_DAMAGE_VALUE,ucb);
+                Immortal i1 = new Immortal("im" + i, il, DEFAULT_IMMORTAL_HEALTH, DEFAULT_DAMAGE_VALUE,ucb, lockJefe);
                 il.add(i1);
             }
             return il;
