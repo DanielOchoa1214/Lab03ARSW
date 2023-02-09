@@ -14,9 +14,6 @@ import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import java.awt.Color;
@@ -36,20 +33,18 @@ public class ControlFrame extends JFrame {
     private JLabel statisticsLabel;
     private JScrollPane scrollPane;
     private JTextField numOfImmortals;
-    private AtomicBoolean lockJefe = new AtomicBoolean(false);
+    private final AtomicBoolean lockJefe = new AtomicBoolean(false);
 
     /**
      * Launch the application.
      */
     public static void main(String[] args) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    ControlFrame frame = new ControlFrame();
-                    frame.setVisible(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        EventQueue.invokeLater(() -> {
+            try {
+                ControlFrame frame = new ControlFrame();
+                frame.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
     }
@@ -69,20 +64,18 @@ public class ControlFrame extends JFrame {
         contentPane.add(toolBar, BorderLayout.NORTH);
 
         final JButton btnStart = new JButton("Start");
-        btnStart.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        btnStart.addActionListener(e -> {
 
-                immortals = setupInmortals();
+            immortals = setupInmortals();
 
-                if (immortals != null) {
-                    for (Immortal im : immortals) {
-                        im.start();
-                    }
+            if (immortals != null) {
+                for (Immortal im : immortals) {
+                    im.start();
                 }
-
-                btnStart.setEnabled(false);
-
             }
+
+            btnStart.setEnabled(false);
+
         });
         toolBar.add(btnStart);
 
@@ -101,24 +94,17 @@ public class ControlFrame extends JFrame {
                 sum += im.getHealth();
             }
             statisticsLabel.setText("<html>"+immortals.toString()+"<br>Health sum:"+ sum);
-            lockJefe.set(false);
-            synchronized (Immortal.lockHillos){
-                Immortal.lockHillos.notifyAll();
-            }
         });
         toolBar.add(btnPauseAndCheck);
 
         JButton btnResume = new JButton("Resume");
-
-        btnResume.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                /**
-                 * IMPLEMENTAR
-                 */
-
+        btnResume.addActionListener(e -> {
+            lockJefe.set(false);
+            synchronized (Immortal.lockHilos){
+                Immortal.lockHilos.notifyAll();
             }
-        });
 
+        });
         toolBar.add(btnResume);
 
         JLabel lblNumOfImmortals = new JLabel("num. of immortals:");
@@ -153,7 +139,7 @@ public class ControlFrame extends JFrame {
         try {
             int ni = Integer.parseInt(numOfImmortals.getText());
 
-            List<Immortal> il = new LinkedList<Immortal>();
+            List<Immortal> il = new LinkedList<>();
 
             for (int i = 0; i < ni; i++) {
                 Immortal i1 = new Immortal("im" + i, il, DEFAULT_IMMORTAL_HEALTH, DEFAULT_DAMAGE_VALUE,ucb, lockJefe);
@@ -184,14 +170,9 @@ class TextAreaUpdateReportCallback implements ImmortalUpdateReportCallback{
         ta.append(report);
 
         //move scrollbar to the bottom
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                JScrollBar bar = jsp.getVerticalScrollBar();
-                bar.setValue(bar.getMaximum());
-            }
-        }
-        );
-
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            JScrollBar bar = jsp.getVerticalScrollBar();
+            bar.setValue(bar.getMaximum());
+        });
     }
-    
 }

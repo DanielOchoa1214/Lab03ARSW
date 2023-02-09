@@ -18,8 +18,8 @@ public class Immortal extends Thread {
     private final String name;
 
     private final Random r = new Random(System.currentTimeMillis());
-    private AtomicBoolean lockJefe;
-    public static AtomicInteger lockHillos = new AtomicInteger(0);
+    private final AtomicBoolean lockJefe;
+    public static final AtomicInteger lockHilos = new AtomicInteger(0);
 
 
     public Immortal(String name, List<Immortal> immortalsPopulation, int health, int defaultDamageValue, ImmortalUpdateReportCallback ucb, AtomicBoolean lockJefe) {
@@ -32,51 +32,60 @@ public class Immortal extends Thread {
         this.lockJefe = lockJefe;
     }
 
+    @Override
     public void run() {
         while (true) {
-            if(lockJefe.get()){
-                if(lockHillos.get() == immortalsPopulation.size() - 1) {
-                    synchronized (lockJefe){
-                        lockJefe.notifyAll();
-                    }
-                    lockHillos.set(0);
-                }
-                try {
-                    lockHillos.addAndGet(1);
-                    synchronized (lockHillos){
-                        lockHillos.wait();
-                    }
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
+            checkPause();
             Immortal im;
-
             int myIndex = immortalsPopulation.indexOf(this);
-
             int nextFighterIndex = r.nextInt(immortalsPopulation.size());
-
             //avoid self-fight
             if (nextFighterIndex == myIndex) {
                 nextFighterIndex = ((nextFighterIndex + 1) % immortalsPopulation.size());
             }
-
             im = immortalsPopulation.get(nextFighterIndex);
-
-            this.fight(im);
-
+            fightInOrder(im);
             try {
                 Thread.sleep(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
         }
 
     }
 
-    public void fight(Immortal i2) {
+    private void fightInOrder(Immortal im){
+        int fromHash = System.identityHashCode(this);
+        int toHash = System.identityHashCode(im);
+        Immortal smallerHash = fromHash > toHash ? im : this;
+        Immortal biggerHash = fromHash > toHash ? this : im;
+        synchronized (smallerHash){
+            synchronized (biggerHash){
+                this.fight(im);
+            }
+        }
+    }
 
+    private void checkPause(){
+        if(lockJefe.get()){
+            try {
+                lockHilos.addAndGet(1);
+                if(lockHilos.get() == immortalsPopulation.size()) {
+                    synchronized (lockJefe){
+                        lockJefe.notifyAll();
+                    }
+                    lockHilos.set(0);
+                }
+                synchronized (lockHilos){
+                    lockHilos.wait();
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public void fight(Immortal i2) {
         if (i2.getHealth() > 0) {
             i2.changeHealth(i2.getHealth() - defaultDamageValue);
             this.health += defaultDamageValue;
@@ -84,7 +93,6 @@ public class Immortal extends Thread {
         } else {
             updateCallback.processReport(this + " says:" + i2 + " is already dead!\n");
         }
-
     }
 
     public void changeHealth(int v) {
