@@ -1,0 +1,13 @@
+
+y
+java:S2142"^Either re-interrupt this method or rethrow the "InterruptedException" that can be caught here.(è®ã¶øÿÿÿÿ
+M
+java:S1128"0Remove this unused import 'java.util.ArrayList'.(÷‰îƒ8üø«Åã0
+M
+java:S1128	"+Remove this unused import 'java.util.List'.(Õë±Äøÿÿÿÿ8ıø«Åã0
+f
+java:S1128"DRemove this unused import 'java.util.concurrent.ArrayBlockingQueue'.(ÜÙ×Ëúÿÿÿÿ8ıø«Åã0
+a
+java:S1128"?Remove this unused import 'java.util.concurrent.BlockingQueue'.(÷ÙÑÿÿÿÿÿ8ıø«Åã0
+c
+java:S1128"GRemove this unused import 'java.util.concurrent.ConcurrentLinkedQueue'.(°½Âh8şø«Åã0

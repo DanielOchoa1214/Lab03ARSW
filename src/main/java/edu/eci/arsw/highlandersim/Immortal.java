@@ -97,6 +97,7 @@ public class Immortal extends Thread {
 
     public void changeHealth(int v) {
         health = v;
+
     }
 
     public int getHealth() {

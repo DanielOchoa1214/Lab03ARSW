@@ -19,22 +19,15 @@ public class StartProduction {
     
     
     public static void main(String[] args) {
-        
-        Queue<Integer> queue=new LinkedBlockingQueue<>();
-        
-        
-        new Producer(queue,Long.MAX_VALUE).start();
-        
+        int maxStock = 5;
+        Queue<Integer> queue = new LinkedBlockingQueue<>(maxStock);
+        new Producer(queue, maxStock).start();
         //let the producer create products for 5 seconds (stock).
         try {
-            Thread.sleep(5000);
+            Thread.sleep(1000);
         } catch (InterruptedException ex) {
             Logger.getLogger(StartProduction.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        
         new Consumer(queue).start();
     }
-    
-
 }

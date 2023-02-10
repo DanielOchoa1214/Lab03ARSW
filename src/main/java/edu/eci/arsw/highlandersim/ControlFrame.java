@@ -79,6 +79,7 @@ public class ControlFrame extends JFrame {
         });
         toolBar.add(btnStart);
 
+        JButton btnResume = new JButton("Resume");
         JButton btnPauseAndCheck = new JButton("Pause and check");
         btnPauseAndCheck.addActionListener(e -> {
             try {
@@ -94,17 +95,20 @@ public class ControlFrame extends JFrame {
                 sum += im.getHealth();
             }
             statisticsLabel.setText("<html>"+immortals.toString()+"<br>Health sum:"+ sum);
+            btnResume.setEnabled(true);
+            btnPauseAndCheck.setEnabled(false);
         });
         toolBar.add(btnPauseAndCheck);
 
-        JButton btnResume = new JButton("Resume");
         btnResume.addActionListener(e -> {
             lockJefe.set(false);
             synchronized (Immortal.lockHilos){
                 Immortal.lockHilos.notifyAll();
             }
-
+            btnResume.setEnabled(false);
+            btnPauseAndCheck.setEnabled(true);
         });
+        btnResume.setEnabled(false);
         toolBar.add(btnResume);
 
         JLabel lblNumOfImmortals = new JLabel("num. of immortals:");
