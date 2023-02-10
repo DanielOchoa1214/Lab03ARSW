@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  */
 public class Consumer extends Thread{
     
-    private Queue<Integer> queue;
+    private final Queue<Integer> queue;
     
     
     public Consumer(Queue<Integer> queue){
@@ -26,14 +26,20 @@ public class Consumer extends Thread{
     @Override
     public void run() {
         while (true) {
-            if (queue.size() > 0) {
+            try {
+                while(queue.isEmpty()){
+                    synchronized (queue){
+                        queue.wait();
+                    }
+                }
                 int elem = queue.poll();
                 System.out.println("Consumer consumes " + elem);
-            }
-            try {
                 Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(Producer.class.getName()).log(Level.SEVERE, null, ex);
+                synchronized (queue){
+                    queue.notifyAll();
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
         }
     }

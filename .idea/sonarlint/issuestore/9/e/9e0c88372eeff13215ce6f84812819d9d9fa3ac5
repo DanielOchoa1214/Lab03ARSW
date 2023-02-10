@@ -1,8 +1,0 @@
-
-Y
-java:S1155">Use isEmpty() to check whether the collection is empty or not.(Õæ‡°ùÿÿÿÿ
-U	java:S106"9Replace this use of System.out or System.err by a logger.(„ìÚÃ8ó¹¯Åã0
-y
-java:S2142#"^Either re-interrupt this method or rethrow the "InterruptedException" that can be caught here.(è®ã¶øÿÿÿÿ
-P
-java:S1128	".Remove this unused import 'java.util.Scanner'.(ÒÜÅ¸úÿÿÿÿ8àé·Åã0
