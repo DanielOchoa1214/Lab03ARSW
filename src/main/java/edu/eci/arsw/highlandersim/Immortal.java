@@ -22,7 +22,7 @@ public class Immortal extends Thread {
     private final Random r = new Random(System.currentTimeMillis());
     private final AtomicBoolean lockJefe;
     public static final AtomicInteger lockHilos = new AtomicInteger(0);
-
+    public static final AtomicInteger threadDead = new AtomicInteger(0);
     private AtomicBoolean dead;
 
 
@@ -39,7 +39,7 @@ public class Immortal extends Thread {
 
     @Override
     public void run() {
-        while (!dead.get()) {
+        while (!dead.get() || (threadDead.get() - 1 != immortalsPopulation.size())) {
             checkPause();
             Immortal im;
             int myIndex = immortalsPopulation.indexOf(this);
@@ -56,6 +56,7 @@ public class Immortal extends Thread {
                 e.printStackTrace();
             }
         }
+        //updateCallback.processReport("Winner : " + this.toString());
     }
 
     private void fightInOrder(Immortal im){
@@ -76,7 +77,7 @@ public class Immortal extends Thread {
         if(lockJefe.get()){
             try {
                 lockHilos.addAndGet(1);
-                if(lockHilos.get() == immortalsPopulation.size()) {
+                if(lockHilos.get() == (immortalsPopulation.size() - threadDead.get())) {
                     synchronized (lockJefe){
                         lockJefe.notifyAll();
                     }
@@ -99,8 +100,6 @@ public class Immortal extends Thread {
                 i2.stopImmortal();
             }
             updateCallback.processReport("Fight: " + this + " vs " + i2+"\n");
-        } else {
-            updateCallback.processReport(this + " says:" + i2 + " is already dead!\n");
         }
     }
 
@@ -118,6 +117,7 @@ public class Immortal extends Thread {
     }
      public void stopImmortal() {
         dead.set(true);
+        threadDead.addAndGet(1);
      }
     public boolean isDead() {
         return dead.get();
