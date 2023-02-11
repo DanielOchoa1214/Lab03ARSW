@@ -67,11 +67,8 @@ public class ControlFrame extends JFrame {
         btnStart.addActionListener(e -> {
 
             immortals = setupInmortals();
-
-            if (immortals != null) {
-                for (Immortal im : immortals) {
-                    im.start();
-                }
+            for (Immortal im : immortals) {
+                im.start();
             }
 
             btnStart.setEnabled(false);
