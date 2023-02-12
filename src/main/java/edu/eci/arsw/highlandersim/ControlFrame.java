@@ -137,7 +137,7 @@ public class ControlFrame extends JFrame {
             Immortal.threadDead.set(0);
             immortals = new ArrayList<>();
             TextAreaUpdateReportCallback updateCallback = new TextAreaUpdateReportCallback(output, scrollPane);
-            updateCallback.processReport("Se reinicio la simulación");
+            updateCallback.processReport("Se termino la simulación");
             btnStart.setEnabled(true);
             btnPauseAndCheck.setEnabled(false);
             btnResume.setEnabled(false);
