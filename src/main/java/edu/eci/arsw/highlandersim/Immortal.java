@@ -24,6 +24,7 @@ public class Immortal extends Thread {
     public static final AtomicInteger lockHilos = new AtomicInteger(0);
     public static final AtomicInteger threadDead = new AtomicInteger(0);
     private AtomicBoolean dead;
+    public static boolean allDead = false;
 
 
     public Immortal(String name, List<Immortal> immortalsPopulation, int health, int defaultDamageValue, ImmortalUpdateReportCallback ucb, AtomicBoolean lockJefe) {
@@ -39,7 +40,7 @@ public class Immortal extends Thread {
 
     @Override
     public void run() {
-        while (!dead.get() || (threadDead.get() - 1 != immortalsPopulation.size())) {
+        while (!dead.get() && (threadDead.get() + 1 != immortalsPopulation.size())) {
             checkPause();
             Immortal im;
             int myIndex = immortalsPopulation.indexOf(this);
@@ -56,7 +57,6 @@ public class Immortal extends Thread {
                 e.printStackTrace();
             }
         }
-        //updateCallback.processReport("Winner : " + this.toString());
     }
 
     private void fightInOrder(Immortal im){
@@ -100,6 +100,10 @@ public class Immortal extends Thread {
                 i2.stopImmortal();
             }
             updateCallback.processReport("Fight: " + this + " vs " + i2+"\n");
+            if (threadDead.get() + 1  == immortalsPopulation.size()) {
+                updateCallback.processReport("Winner : " + this.toString() + "\n");
+                allDead = true;
+            }
         }
     }
 

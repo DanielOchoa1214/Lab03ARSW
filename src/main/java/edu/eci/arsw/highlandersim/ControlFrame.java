@@ -2,6 +2,7 @@ package edu.eci.arsw.highlandersim;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -64,6 +65,9 @@ public class ControlFrame extends JFrame {
         contentPane.add(toolBar, BorderLayout.NORTH);
 
         final JButton btnStart = new JButton("Start");
+        JButton btnResume = new JButton("Resume");
+        JButton btnPauseAndCheck = new JButton("Pause and check");
+        JButton btnStop = new JButton("STOP");
         btnStart.addActionListener(e -> {
 
             immortals = setupInmortals();
@@ -72,17 +76,19 @@ public class ControlFrame extends JFrame {
             }
 
             btnStart.setEnabled(false);
-
+            btnPauseAndCheck.setEnabled(true);
+            btnStop.setEnabled(true);
         });
         toolBar.add(btnStart);
 
-        JButton btnResume = new JButton("Resume");
-        JButton btnPauseAndCheck = new JButton("Pause and check");
+        btnPauseAndCheck.setEnabled(false);
         btnPauseAndCheck.addActionListener(e -> {
             try {
                 lockJefe.set(true);
                 synchronized (lockJefe){
-                    lockJefe.wait();
+                    if (!Immortal.allDead) {
+                        lockJefe.wait();
+                    }
                 }
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
@@ -94,6 +100,7 @@ public class ControlFrame extends JFrame {
             statisticsLabel.setText("<html>"+immortals.toString()+"<br>Health sum:"+ sum);
             btnResume.setEnabled(true);
             btnPauseAndCheck.setEnabled(false);
+            btnStop.setEnabled(false);
         });
         toolBar.add(btnPauseAndCheck);
 
@@ -104,6 +111,7 @@ public class ControlFrame extends JFrame {
             }
             btnResume.setEnabled(false);
             btnPauseAndCheck.setEnabled(true);
+            btnStop.setEnabled(true);
         });
         btnResume.setEnabled(false);
         toolBar.add(btnResume);
@@ -116,9 +124,25 @@ public class ControlFrame extends JFrame {
         toolBar.add(numOfImmortals);
         numOfImmortals.setColumns(10);
 
-        JButton btnStop = new JButton("STOP");
         btnStop.setForeground(Color.RED);
         toolBar.add(btnStop);
+        btnStop.addActionListener(e -> {
+            for(Immortal im : immortals) {
+                if(im.isAlive()) {
+                    synchronized (im) {
+                        im.stopImmortal();
+                    }
+                }
+            }
+            Immortal.threadDead.set(0);
+            immortals = new ArrayList<>();
+            TextAreaUpdateReportCallback updateCallback = new TextAreaUpdateReportCallback(output, scrollPane);
+            updateCallback.processReport("Se reinicio la simulación");
+            btnStart.setEnabled(true);
+            btnPauseAndCheck.setEnabled(false);
+            btnResume.setEnabled(false);
+            btnStop.setEnabled(false);
+        });
 
         scrollPane = new JScrollPane();
         contentPane.add(scrollPane, BorderLayout.CENTER);
